@@ -1,0 +1,36 @@
+//Introduction to columnar storage
+
+Need of columnar storage ==>supp we are dealing with 1000 of data nodes & 1000 of PB data, & we want to build eficient storage of data / so that we can compress the data  .. because
+if we achieve to reduce for ex 10% storage data for huge data that means lot.. it would save lot of money.. Also u want to have very efficient IO.. which means queries goes fast.. so columnar storage is designed for the same..
+
+Common confusion between Hbase columnar & Parquet columnar format terminologies.. In hbase getting single item from very huge table..
+Here use case is massive throughput big dataware queries that is different from Hbase columnar terminologies which is misconception that these Parquet & Hbase columnar terminologies are same..
+
+columnar storage idea come from Relational databases
+
+Understand with example: Calculate gender distribution
+Name	Age		Gender
+Alice	30		F
+Bob		28		M 
+
+RDBMS based on row format where information specific to one record is stored. for ex: Alice .. it will find index for the specific row start poing & end point & get all the information to that record
+
+On disk, in row format read each row, extract gender & perform  calculation
+
+
+But in Data ware hoousing we are not limited to only 3 columns  most of the time we deals with 200 or 300 columns or more ... & lot of time in our queries we dont toouch most of the
+coloumns  .. for ex we need calcuation by gender distribyution or age distribution.. or give me average hieght by county etc
+
+so single query does not touch all the 200 columns .. because we need agreegation on few column..
+
+In columnar storage we store coloummns values all together.. index will give us column start & end point, we will know this column start from
+where to where..
+
+Now if we need to do arrage above table in columnar format we need to to do lot of work.. so if we need to reconstruct all of these record  there would
+be fair amount of work..but if we trying do calcualtion which touch only few colns then its a comparitivery simple..
+
+we dont need unwanted  colns names etc..   one sequnetial read will suffice us.. that helps lot:
+a) reduces IO extensively.. we are not reading all the column... only reading coln which we need
+b) we can put like data together .. by putting all String together..like people names next to each other.. numbers for ages toghter.. it gives better
+compression if we keep same data type together.. even generic comperession significantlty work better..
+c) u can skip unecessary  desirilization.. u can only desserialize the data(colns) which pertains to our query..
