@@ -1,0 +1,284 @@
+
+
+First Go & start oracle services from the service manager manually (services.msc):
+-oraclejobschedulerXE
+-oraclemtsrecoverservice
+-oracleServiceXE
+-oracleXEclrAgent
+-oracleXETNSListner
+
+//Browse the url to connect with the database:
+http://127.0.0.1:8080/htmldb
+http://127.0.0.1:8080/apex/f?p=4950:7:3281496707587418::NO:::
+http://127.0.0.1:8080/apex/f?p=4550:1:2649312099627194
+
+
+
+username: system
+pwd: manager
+
+
+//Sql query practice
+http://infogoal.com/sql/sql-advanced.htm
+
+
+CREATE TABLE product ( 
+product_nbr int NOT NULL,
+product_name varchar(40) NOT NULL,
+product_status_code char(10) NOT NULL,
+start_date date NULL,
+end_date date NULL,
+raw_material_cost decimal(12,2) NULL,
+primary key (product_nbr)
+)
+
+
+//Table 1
+-------------
+CREATE TABLE region(
+region_nbr int NOT NULL,
+region_name varchar(40) NOT NULL,
+primary key (region_nbr)
+)
+
+insert into region values(100,	'East Region')
+insert into region values(200, 'Central Region')
+insert into region values(400,	'West Region')
+
+
+--inserting 1 record to check inner & outer join
+insert into region values(300,	'Fake Region')
+		
+
+//Table 2
+-------------
+CREATE TABLE branch(
+branch_nbr int NOT NULL,
+branch_name varchar(40) NOT NULL,
+region_nbr int,
+employee_count int,
+primary key (branch_nbr)
+)
+ALTER TABLE branch
+ADD CONSTRAINT FK_branch_region FOREIGN KEY (region_nbr)
+REFERENCES region (region_nbr)
+
+insert into branch values(108,	'New York',	100,	10);
+insert into branch values(110,	'Boston',	100,	6);
+insert into branch values(212,	'Chicago',	200,	5);
+insert into branch values(404,	'San Diego',400,	6);
+insert into branch values(415,	'San Jose',	400,	3);
+
+
+//Table 3
+----------------
+CREATE TABLE Branch_Sale(
+branch_nbr	int NOT NULL,
+sale_date	date NOT NULL,
+sale_amount	decimal(10,5) NULL
+)
+
+
+insert into Branch_Sale values(108,	to_date('2006-01-01','YYYY-MM-DD'),	1000.0000)
+insert into Branch_Sale values(108,	to_date('2006-02-07','YYYY-MM-DD'),	2500.0000)
+insert into Branch_Sale values(110,	to_date('2006-01-01','YYYY-MM-DD'),	500.0000)
+insert into Branch_Sale values(212,	to_date('2006-01-01','YYYY-MM-DD'),	342.0000)
+insert into Branch_Sale values(404,	to_date('2006-01-01','YYYY-MM-DD'),	200.0000)
+insert into Branch_Sale values(404,	to_date('2006-02-03','YYYY-MM-DD'),	310.0000)
+insert into Branch_Sale values(415,	to_date('2006-01-01','YYYY-MM-DD'),	42.0000)
+
+--inserting null ron
+insert into Branch_Sale values(415,	to_date('2015-01-01','YYYY-MM-DD'),	null)
+
+
+-Table: Region
+region_nbr	region_name
+----------------------------
+100			East Region
+200			Central Region
+400			West Region
+300			Fake Region
+
+-Table: Branch
+branch_nbr	branch_name		region_nbr		employee_count
+----------------------------------------------------------
+108			New York		100				10
+110			Boston			100				6
+212			Chicago			200				5
+404			San Diego		400				6
+415			San Jose		400				3
+
+
+
+Table: Branch_Sale
+branch_nbr	sale_date	sale_amount
+-----------------------------------
+108			2006-01-01	1000.0000
+108			2006-02-07	2500.0000
+110			2006-01-01	500.0000
+212			2006-01-01	342.0000
+404			2006-01-01	200.0000
+404			2006-02-03	310.0000
+415			2006-01-01	42.0000
+
+select branch_nbr, sale_amount from branch_sale where branch_nmbr =108
+
+select branch_nbr, sale_amount from branch_sale order by sale_amount
+
+--In clause: The SQL IN operator is a clean way to check values in lists without creating a series of OR clauses.
+select * from region where region_nbr in (100,200)
+select * from region where region_nbr=100 or  region_nbr=200 
+
+
+--DISTINCT can be placed in front of a single column name or a number of column names. When in front of multiple column names, a distinct combination is returned.
+select distinct region_nbr from branch
+
+
+--aggregate functions
+select sum(sale_amount) as TotalSale from branch_sale
+
+
+--Group by -GROUP BY supports dividing data into sets so that aggregate functions like SUM can be performed
+rule: The columns in a SELECT clause must be either group by columns or aggregate function columns.
+select branch_nbr, sum(sale_amount) as TotalSale from branch_sale group by branch_nbr
+
+Note: kehne ke matlab yeh hai kee - group by ka fayda waha hota hai jaha aggregate fns use hote hai. uske alawa  group by koi fayda nahi hai
+Agar koi column select mein hai or groupby mein nahi hai to NAHI chalega, ulta is possible , if some col  is there in groupby but not there in select chalega
+
+
+-having: It is used instead of the WHERE clause when Aggregate Functions are used.  
+select branch_nbr, sum(sale_amount) as TotalSale from branch_sale group by branch_nbr having sum(sale_amount) > 500
+
+
+-order by
+select branch_nbr, sum(sale_amount) as TotalSale from branch_sale group by branch_nbr order by branch_nbr
+
+
+-top n analysis
+select branch_nbr, sale_amount from (select branch_nbr, sale_amount from branch_sale where sale_amount is not null order by sale_amount desc) where rownum <=3
+
+
+-SQL join- when u need fields from two or more tables. The SQL JOIN is a clause that enables a SELECT statement to access more than one table
+the standard JOIN clause (also known as the INNER JOIN clause) -rows are returned only when there are matches for the JOIN critieria on the second table.
+
+select r.region_nbr, r.region_name,b.branch_name, b.employee_count from region r join branch b on r.region_nbr = b.region_nbr order by r.region_nbr desc
+
+or can write in this way
+select r.region_nbr, r.region_name,b.branch_name, b.employee_count from region r, branch b where r.region_nbr = b.region_nbr order by r.region_nbr desc
+
+
+-Outer join -rows are returned even when there are no matches through the JOIN critieria on the second table.
+usecase:It can be useful when there is a need to merge data from two tables and to include all rows from both tables without depending on a match. Another use is to generate a large result set for testing purposes.
+
+-left outer: u can write either left or left outer join keyword
+select r.region_nbr, r.region_name,b.branch_name, b.employee_count from region r left outer join branch b on r.region_nbr = b.region_nbr order by r.region_nbr desc
+
+-right outer join - to include all the rows from right table
+select r.region_nbr, r.region_name,b.branch_name, b.employee_count from region r right outer join branch b on r.region_nbr = b.region_nbr order by r.region_nbr desc
+
+-full outer join -to include all the rows from both table
+select r.region_nbr, r.region_name,b.branch_name, b.employee_count from region r full outer join branch b on r.region_nbr = b.region_nbr order by r.region_nbr desc
+
+-subquery: tyring to understand with one example thought by own: list the branches & thier employess in East region
+select branch_name,employee_count from branch where region_nbr = (select region_nbr from Region where region_name = 'East Region')
+
+
+--CARTESIAN JOIN or CROSS JOIN:
+"cartesian product" can result if there is no relating the tables for the join. A row would be included for each combination between the two tables so if one table has 1,000 rows and the second table has 2,000 rows then 2,000,000 rows would be returned.
+
+for ex: if join condition is missing - where clause is missing
+"cartesian product" can result if there is no relating the tables for the join. A row would be included for each combination between the two tables so if one table has 1,000 rows and the second table has 2,000 rows then 2,000,000 rows would be returned.
+
+
+
+
+
+-Union
+The SQL UNION clause/operator is used to combine the results of two or more SELECT statements without returning any duplicate rows.
+
+To use UNION, each SELECT must have the same number of columns selected, the same number of column expressions, the same data type, and have them in the same order, but they do not have to be the same length.
+
+ex:
+select r.region_nbr, r.region_name,b.branch_name, b.employee_count from region r left outer join branch b on r.region_nbr = b.region_nbr
+union
+select r.region_nbr, r.region_name,b.branch_name, b.employee_count from region r right outer join branch b on r.region_nbr = b.region_nbr
+
+
+-Union all
+The UNION ALL operator is used to combine the results of two SELECT statements including duplicate rows.
+The same rules that apply to UNION apply to the UNION ALL operator.
+
+ex:
+select r.region_nbr, r.region_name,b.branch_name, b.employee_count from region r left outer join branch b on r.region_nbr = b.region_nbr
+union all
+select r.region_nbr, r.region_name,b.branch_name, b.employee_count from region r right outer join branch b on r.region_nbr = b.region_nbr
+
+
+
+
+
+
+
+
+
+
+
+
+
+---------------------------------------------------------------------------------------------
+http://www.tutorialspoint.com/sql/
+
+------Subquery 
+subquery or Inner query or Nested query is a query within another SQL query and embedded within the WHERE clause.
+
+A subquery is used to return data that will be used in the main query as a condition to further restrict the data to be retrieved.
+
+Subqueries can be used with the SELECT, INSERT, UPDATE, and DELETE statements along with the operators like =, <, >, >=, <=, IN, BETWEEN etc.
+
+There are a few rules that subqueries must follow:
+-Subqueries must be enclosed within parentheses.
+-A subquery can have only one column in the SELECT clause, unless multiple columns are in the main query for the subquery to compare its selected columns.
+-An ORDER BY cannot be used in a subquery, although the main query can use an ORDER BY. The GROUP BY can be used to perform the same function as the ORDER BY in a subquery.
+-Subqueries that return more than one row can only be used with multiple value operators, such as the IN operator.
+-A subquery cannot be immediately enclosed in a set function.
+-The BETWEEN operator cannot be used with a subquery; however, the BETWEEN operator can be used within the subquery.
+
+
+-Customer table
++----+----------+-----+-----------+----------+
+| ID | NAME     | AGE | ADDRESS   | SALARY   |
++----+----------+-----+-----------+----------+
+|  1 | Ramesh   |  35 | Ahmedabad |  2000.00 |
+|  2 | Khilan   |  25 | Delhi     |  1500.00 |
+|  3 | kaushik  |  23 | Kota      |  2000.00 |
+|  4 | Chaitali |  25 | Mumbai    |  6500.00 |
+|  5 | Hardik   |  27 | Bhopal    |  8500.00 |
+|  6 | Komal    |  22 | MP        |  4500.00 |
+|  7 | Muffy    |  24 | Indore    | 10000.00 |
++----+----------+-----+-----------+----------+
+
+-Subqueries with the SELECT Statement:
+SELECT * 
+     FROM CUSTOMERS 
+     WHERE ID IN (SELECT ID 
+                  FROM CUSTOMERS 
+                  WHERE SALARY > 4500) ;
+
+				  
+- Subqueries with the INSERT Statement: Consider a table CUSTOMERS_BKP with similar structure as CUSTOMERS table
+INSERT INTO CUSTOMERS_BKP
+     SELECT * FROM CUSTOMERS 
+     WHERE ID IN (SELECT ID 
+                  FROM CUSTOMERS) ;
+
+-Subqueries with the UPDATE Statement: updates SALARY by 0.25 times in CUSTOMERS table for all the customers whose AGE is greater than or equal to 27
+ UPDATE CUSTOMERS
+     SET SALARY = SALARY * 0.25
+     WHERE AGE IN (SELECT AGE FROM CUSTOMERS_BKP
+                   WHERE AGE >= 27 );	
+
+-Subqueries with the DELETE Statement: deletes records from CUSTOMERS table for all the customers whose AGE is greater than or equal to 27:		
+
+DELETE FROM CUSTOMERS
+     WHERE AGE IN (SELECT AGE FROM CUSTOMERS_BKP
+                   WHERE AGE > 27 );		
