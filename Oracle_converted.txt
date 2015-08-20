@@ -1,0 +1,186 @@
+http://www.codeproject.com/Articles/684973/Understanding-Complex-MySQL-JOIN
+--Table1
+CREATE TABLE dept_info(
+  id int NOT NULL,
+  name varchar(40) DEFAULT NULL,
+  PRIMARY KEY (id)
+)
+drop table dept_info;
+
+
+INSERT INTO dept_info VALUES (1,'Other');
+INSERT INTO dept_info VALUES(2,'Development');
+INSERT INTO dept_info VALUES(3,'Manager');
+
+	 
+
+		 
+--Table2
+CREATE TABLE idea_categories (
+  category_id int NOT NULL,
+  category_name varchar2(40),
+  PRIMARY KEY (category_id)
+);
+INSERT INTO idea_categories VALUES (1,'Project Lifecycle');
+INSERT INTO idea_categories VALUES (2,'Video');
+INSERT INTO idea_categories VALUES (3,'Language Analysis');
+
+
+
+
+
+---Table3
+CREATE TABLE idea_events(
+  idea_id int  NOT NULL,
+  event_id int  NOT NULL,
+  events varchar2(40),
+  PRIMARY KEY (event_id)
+);
+INSERT INTO idea_events VALUES (1,1,'Ideation Phase');
+INSERT INTO idea_events VALUES (1,2,'Implementation Phase');
+INSERT INTO idea_events VALUES (3,3,'Discussion Phase');
+
+
+
+
+--Table4
+CREATE TABLE user_info (
+  id varchar(10) NOT NULL,
+  full_name varchar(80)  NULL,
+  dept_id int   NULL,
+  points int   NULL,
+  primary key  (id)
+);
+
+ALTER TABLE user_info
+ADD CONSTRAINT user_info_ibfk_2 FOREIGN KEY (dept_id)
+REFERENCES dept_info (id);
+
+INSERT INTO user_info VALUES ('jack','JACK D.',2,2);
+INSERT INTO user_info VALUES ('jackson','M.S. Jackson',3,3);
+INSERT INTO user_info VALUES ('alice','Alice W',2,1);
+INSERT INTO user_info VALUES ('bob','Bob S.',2,2);
+
+
+
+
+
+
+
+
+
+--Table5
+CREATE TABLE user_idea (
+  idea_id int  NOT NULL,
+  user_id varchar(10)  NULL,
+  title varchar(40),
+  innovators varchar(40),
+  idea_categories varchar(40),
+  status int NULL,
+  description varchar(40),
+  PRIMARY KEY (idea_id)
+
+);
+
+ALTER TABLE user_idea
+ADD CONSTRAINT user_idea_ibfk_1 FOREIGN KEY (user_id)
+REFERENCES user_info (id);
+
+INSERT INTO user_idea VALUES (1,'jack','Video Annotations','jack','1;2',1,'Video Annotations Description');
+INSERT INTO user_idea VALUES (2,'jack','Optimize waterfall model','jack;jackson','3',0,'Optimize waterfall model Description');
+INSERT INTO user_idea VALUES (3,'jackson','Automation','jackson','1',1,'Automation Description');
+INSERT INTO user_idea VALUES (4,'jackson','Design Patterns','jackson','1',0,'Design Patterns Description');
+INSERT INTO user_idea VALUES (5,'alice','Identify Video Objects','alice;jack','2',1,'Identify Video Objects Description');
+INSERT INTO user_idea VALUES (6,'bob','Tin Can LMS','bob','1',1,'Tin Can LMS Description');
+INSERT INTO user_idea VALUES (7,'bob','Text Summarization','bob','2;3',0,'Text Summarization Description');
+
+
+
+//dept_info
+  ID		NAME
+----		-----------------
+   1		Other
+   2		Development
+   3		Manager
+   
+      
+//idea_categories
+CATEGORY_ID 	CATEGORY_NAME
+----------- 	------------------
+  1				Project Lifecycle
+  2				Video
+  3				Language Analysis
+
+  select CATEGORY_ID from idea_categories
+  
+//idea_events
+   IDEA_ID 		EVENT_ID 			EVENTS
+---------- 		--------		---------------------
+	 1     			   1		Ideation Phase
+	 1     			   2		Implementation Phase
+	 3     			   3		Discussion Phase
+	 
+//user_info
+ID 			FULL_NAME 	DEPT_ID 	POINTS 
+--------	------------------------------------
+jack 		JACK D. 		2 			2 
+jackson 	M.S. Jackson 	3 			3 
+alice 		Alice W 		2 			1 
+bob 		Bob S. 			2 			2 
+
+
+//user_idea
+IDEA_ID USER_ID 		TITLE 						INNOVATORS 		IDEA_CATEGORIES  	 STATUS 		 		DESCRIPTION 
+---------------------------------------------------------------------------------------------------------------------------------------------------
+5			alice 		Identify Video Objects 		alice;jack 			2 					1 			Identify Video Objects Description 
+6			bob 		Tin Can LMS 				bob 				1 					1 			Tin Can LMS Description 
+7			bob 		Text Summarization 			bob 				2;3 				0 			Text Summarization Description 
+1			jack 		 Video Annotations 			jack 				1;2 				1 			Video Annotations Description 
+2			jack 		 Optimize waterfall model 	jack;jackson 		3 					0			Optimize waterfall model Description 
+3			jackson 	 Automation 				jackson 			1 					1 			Automation Description 
+4			jackson 	 Design Patterns 			jackson 			1 					0 			Design Patterns Description 
+
+
+Problem 1: Getting list of ideas with user information :
+---------
+Task: In this problem, we want to retrieve all the ideas with attributes (idea_id, title, status and innovators) which are present in user_idea table along with idea user information with attributes (user id and user full name) present in user_info table
+
+
+select idea.user_id, UI.FULL_NAME, idea.title, idea.innovators, idea.STATUS  
+	from user_idea idea, user_info UI 
+		where idea.user_id= UI.id
+
+
+select idea.user_id, UI.FULL_NAME, idea.title, idea.innovators, idea.STATUS 
+from user_idea idea JOIN user_info UI 
+on idea.user_id= UI.id
+
+Problem 2: Fetch all accepted ideas for a specific user
+------------
+Task: Here, we want to get list of all accepted ideas(i.e. idea with status = 1) for a particular user(jack) who is one of the innovators of those ideas.
+select userd_id, title from user_idea where user_id like '%jack%' and status =1;
+
+
+
+Problem 3: Fetch idea details with idea categories names and idea events information
+
+select idea.user_id, idea.title, idea.IDEA_CATEGORIES, idea.STATUS  from user_idea idea
+
+SELECT user_id,title, CASE WHEN IDEA_CATEGORIES= 1 THEN 'Project Lifecycle'
+                           WHEN IDEA_CATEGORIES= 2 THEN 'Video'
+                           ELSE 'Language Analysis'
+                      END AS "Idea Category"
+FROM   user_idea where idea_id not in(1,7)
+	 
+	 
+	 
+	 
+ SELECT t.idea_id,
+          trim(regexp_substr(t.IDEA_CATEGORIES, '[^,]+', 1, lines.column_value)) IDEA_CATEGORIES
+   FROM user_idea t,
+     TABLE (CAST (MULTISET
+     (SELECT LEVEL FROM dual CONNECT BY instr(t.IDEA_CATEGORIES, ',', 1, LEVEL - 1) > 0)
+                  AS sys.odciNumberList
+                 )
+           ) lines
+   ORDER BY idea_id
