@@ -1,0 +1,70 @@
+Discussion with ProdSupp Team - To collect required information for source systems 
+Go Through Relevant Documents - provided by Support team /share points docs /
+                -Functional Spec.
+                -Requirement Document.
+                -Technical Design Doc
+                
+                
+ Analysis 
+
+ Come up with Understanding Document for all these source system: 
+                -Size of data.
+                -Type of data we are going to receive -Snapshot/Delta.                
+                -Data details for Source System as:
+                                -Number of tables in each database.
+                                -T/NT tables
+                                -Number of files finally which would be used for reporting 
+                                -if any other database referred internally by these source systems, User managed databases (if any).
+                                -Database names and their owners.
+                                
+                                
+ documentation 
+                                                HLD,Detailed Design Doc, SIT Manual, Visio Diagrams, Unit Test Plan, CIT report & other supporting docs
+
+ Dev database access (read/write) for all these source system - if not provided - Need to replicate all these databases                
+                -script to replicate all the database/tables -
+
+             Come up with D structure & creation of same in Development cluster
+
+             Convert published files into required format & move to hdfs staging area  (Confirm with Abinitio/Informatica resource)
+
+             Initial Load –E layer to Hadoop for Src System - Via Sqoop import 
+
+             Daily transfer of delta/snapshot data from source system - (Confirm with Abinitio/Informatica resource)
+
+
+             Hadoop Processing -SparseHistory/ CDC/Additional Processing – Src System
+                - Delta Processing
+                
+                - Snapshot processing
+                                                          
+             Writing Unit test cases 
+
+ Code Review 
+
+             Creation of Hive tables/Impala Tables 
+                
+
+             CI onboard :  
+-Creation of GIT repository  -done
+– required branches 
+- Jenkin Jobs(to be reused & tested)
+
+             Data generation - Generate meaningful data 
+
+             CIT - Testing end to end on PCB cluster with required wrapper Scritps- as per standard directory structure 
+
+             Defect fixing 
+
+
+
+
+
+200 -300 Days Man efforts
+
+framwork build
+daliy zero
+daily
+hive tables
+number of fields
+                
