@@ -1,0 +1,54 @@
+
+
+Log Stash -
+-----------
+
+in old days .. to view logs we need to cat..tail..grep ..the logs .. windows evnt logs, iphone logs..many diff logs.. In order to find sthing.. we need to grep..
+its headache.. another thing between diff logs its idff time formats..logstash to get all logs in same time format as per ur local...
+
+-Traditional systme does not scale..more than 1 server .. many srces within any give server.. diff timezone for diff servers..
+
+System logs.. consolidate log enteries to s
+
+Logstash - 
+----------
+ships logs from any source....parse them..Get the right timestamp..Index them..Allows you to search them..
+
+how does logstash get tht logs: bunch of diff ways..u cna send events using
+-tcp/udp
+-files
+-syslog
+- microsoft windows eventslogs
+-stdin
+-it extensible ..we can writhe our own plugin.. whole thing is written in java /jruby..extend with Ruby
+
+Parse the input:
+-----------------
+ Json, csv, xml, regex, Grok(regex on steroids), Multiline(stack trace)
+
+-Architecture:
+---------------------
+shipper ..Broker
+shipper
+shipper ...Brokder...Indexer ..storage & search ---Web Interface
+shipper
+shipper
+
+How can logstash output the data
+--------------------------------
+-TCP/UDP
+email
+files
+http
+Nagios(It infrastrucuter monitorying tool)
+Alergting tools(HipChat, SMS)
+
+LogStash @ dreamhost
+-20k apache events /sec
+-250 million events/day
+-75GB data/day
+-160 web servers
+-7 logstash/elastic search servers
+
+
+Sai Chinta Reddy -  Team handling - Team managment- Client handling...Team Managment..
